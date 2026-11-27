@@ -3,78 +3,100 @@
 @section('page-title', 'Biaya Operasional')
 @section('content')
 
-<div class="grid lg:grid-cols-5 gap-6">
+<style>
+    .biaya-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+        gap: 20px;
+        align-items: start;
+    }
+    @media (max-width: 1024px) {
+        .biaya-layout { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="biaya-layout">
     {{-- Form Input --}}
-    <div class="lg:col-span-2 bg-white rounded-xl p-5 shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 mb-4">Catat Biaya Operasional</h3>
-        <form method="POST" action="{{ route('admin.biaya-operasional.store') }}" class="space-y-4">
-            @csrf
-            <div>
-                <label class="block text-xs text-gray-500 mb-1">Tanggal <span class="text-red-500">*</span></label>
-                <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
-            </div>
-            <div>
-                <label class="block text-xs text-gray-500 mb-1">Kategori <span class="text-red-500">*</span></label>
-                <select name="kategori" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
-                    <option value="lahan_bumdes">Lahan BUMDes (pupuk, benih, traktor, buruh)</option>
-                    <option value="angkut_timbang">Angkut & Timbang</option>
-                    <option value="kemasan_karung">Kemasan & Karung</option>
-                    <option value="lainnya">Lainnya</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs text-gray-500 mb-1">Keterangan <span class="text-red-500">*</span></label>
-                <input type="text" name="keterangan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
-            </div>
-            <div>
-                <label class="block text-xs text-gray-500 mb-1">Nominal (Rp) <span class="text-red-500">*</span></label>
-                <input type="number" name="nominal" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" min="0" step="1000" required>
-            </div>
-            <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg text-sm font-medium">Simpan Biaya</button>
-        </form>
+    <div class="card">
+        <div class="card-header">Catat Biaya Operasional</div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('admin.biaya-operasional.store') }}" style="display:flex; flex-direction:column; gap:14px;">
+                @csrf
+                <div>
+                    <label class="form-label">Tanggal <span style="color:#b91c1c;">*</span></label>
+                    <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" class="form-control" required>
+                </div>
+                <div>
+                    <label class="form-label">Kategori <span style="color:#b91c1c;">*</span></label>
+                    <select name="kategori" class="form-control" required>
+                        <option value="lahan_bumdes" {{ old('kategori') === 'lahan_bumdes' ? 'selected' : '' }}>Lahan BUMDes (pupuk, benih, traktor, buruh)</option>
+                        <option value="angkut_timbang" {{ old('kategori') === 'angkut_timbang' ? 'selected' : '' }}>Angkut &amp; Timbang</option>
+                        <option value="kemasan_karung" {{ old('kategori') === 'kemasan_karung' ? 'selected' : '' }}>Kemasan &amp; Karung</option>
+                        <option value="lainnya" {{ old('kategori') === 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Keterangan <span style="color:#b91c1c;">*</span></label>
+                    <input type="text" name="keterangan" value="{{ old('keterangan') }}" class="form-control" placeholder="Contoh: Sewa traktor blok utara" required>
+                </div>
+                <div>
+                    <label class="form-label">Nominal (Rp) <span style="color:#b91c1c;">*</span></label>
+                    <input type="number" name="nominal" value="{{ old('nominal') }}" class="form-control" min="0" step="1000" placeholder="0" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:4px;">Simpan Biaya</button>
+            </form>
+        </div>
     </div>
 
     {{-- Tabel --}}
-    <div class="lg:col-span-3 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="font-semibold text-gray-700">Riwayat Biaya Operasional</h3>
-            <span class="text-sm text-gray-500">Total: <strong class="text-orange-600">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</strong></span>
+    <div class="card" style="overflow:hidden;">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <span>Riwayat Biaya Operasional</span>
+            <span style="font-size:13px; font-weight:500; color:var(--p-muted);">
+                Total: <strong style="color:var(--p-ink); font-variant-numeric:tabular-nums;">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</strong>
+            </span>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-gray-500 text-xs">
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <th class="px-4 py-3 text-left">Tanggal</th>
-                        <th class="px-4 py-3 text-left">Kategori</th>
-                        <th class="px-4 py-3 text-left">Keterangan</th>
-                        <th class="px-4 py-3 text-right">Nominal (Rp)</th>
-                        <th class="px-4 py-3"></th>
+                        <th>Tanggal</th>
+                        <th>Kategori</th>
+                        <th>Keterangan</th>
+                        <th class="r">Nominal (Rp)</th>
+                        <th></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody>
                     @forelse($biayas as $b)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-2.5">{{ $b->tanggal->format('d/m/Y') }}</td>
-                            <td class="px-4 py-2.5">
-                                <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">{{ $b->label_kategori }}</span>
+                        <tr>
+                            <td style="white-space:nowrap;">{{ $b->tanggal->format('d/m/Y') }}</td>
+                            <td>
+                                <span class="badge badge-orange">{{ $b->label_kategori }}</span>
                             </td>
-                            <td class="px-4 py-2.5 text-gray-600">{{ $b->keterangan }}</td>
-                            <td class="px-4 py-2.5 text-right font-medium">{{ number_format($b->nominal, 0, ',', '.') }}</td>
-                            <td class="px-4 py-2.5">
+                            <td style="color:var(--p-muted);">{{ $b->keterangan }}</td>
+                            <td class="r num" style="font-weight:600;">{{ number_format($b->nominal, 0, ',', '.') }}</td>
+                            <td class="r">
                                 <form method="POST" action="{{ route('admin.biaya-operasional.destroy', $b) }}" class="inline"
                                       onsubmit="return confirm('Hapus data ini?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="text-xs text-red-500 hover:underline">Hapus</button>
+                                    <button type="submit" class="btn btn-danger btn-xs">Hapus</button>
                                 </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="px-5 py-6 text-center text-gray-400">Belum ada data biaya.</td></tr>
+                        <tr>
+                            <td colspan="5" style="text-align:center; padding:28px; color:var(--p-muted); font-size:13px;">
+                                Belum ada data biaya.
+                            </td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="px-5 py-3 border-t border-gray-100">{{ $biayas->links() }}</div>
+        @if($biayas->hasPages())
+            <div class="card-footer">{{ $biayas->links() }}</div>
+        @endif
     </div>
 </div>
 @endsection

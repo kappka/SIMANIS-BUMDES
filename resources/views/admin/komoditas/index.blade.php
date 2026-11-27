@@ -5,80 +5,75 @@
 
 <div x-data="{ tab: 'stok', editId: null, editHargaBeli: '', editHargaJual: '' }">
 
-    {{-- Tabs --}}
-    <div class="flex gap-2 mb-6">
-        <button @click="tab='stok'" :class="tab==='stok' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 border border-gray-300'" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            🌾 Master Komoditas
-        </button>
-        <button @click="tab='opname'" :class="tab==='opname' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 border border-gray-300'" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            📊 Stock Opname
-        </button>
-        <button @click="tab='tambah'" :class="tab==='tambah' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 border border-gray-300'" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            ➕ Tambah Komoditas
-        </button>
+    {{-- Tab bar --}}
+    <div class="tab-bar">
+        <button @click="tab='stok'" :class="tab==='stok' ? 'active' : ''" class="tab-btn">Master Komoditas</button>
+        <button @click="tab='opname'" :class="tab==='opname' ? 'active' : ''" class="tab-btn">Stock Opname</button>
+        <button @click="tab='tambah'" :class="tab==='tambah' ? 'active' : ''" class="tab-btn">+ Tambah Komoditas</button>
     </div>
 
     {{-- Tab: Master Komoditas --}}
-    <div x-show="tab==='stok'" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-gray-500 text-xs">
+    <div x-show="tab==='stok'" class="card" style="overflow:hidden;">
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <th class="px-5 py-3 text-left">Komoditas</th>
-                        <th class="px-5 py-3 text-right">Stok (Kg)</th>
-                        <th class="px-5 py-3 text-right">HPP Rata2</th>
-                        <th class="px-5 py-3 text-right">Harga Beli Aktif</th>
-                        <th class="px-5 py-3 text-right">Harga Jual Aktif</th>
-                        <th class="px-5 py-3 text-left">Status</th>
-                        <th class="px-5 py-3 text-left">Aksi</th>
+                        <th>Komoditas</th>
+                        <th class="r">Stok (Kg)</th>
+                        <th class="r">HPP Rata2</th>
+                        <th class="r">Harga Beli Aktif</th>
+                        <th class="r">Harga Jual Aktif</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody>
                     @forelse($komoditas as $k)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-5 py-3 font-medium text-gray-800">{{ $k->nama_komoditas }}</td>
-                            <td class="px-5 py-3 text-right font-mono">{{ number_format($k->stok_kg, 0, ',', '.') }}</td>
-                            <td class="px-5 py-3 text-right text-gray-500">Rp {{ number_format($k->harga_modal_rata2, 0, ',', '.') }}</td>
-                            <td class="px-5 py-3 text-right">Rp {{ number_format($k->harga_beli_aktif, 0, ',', '.') }}</td>
-                            <td class="px-5 py-3 text-right text-green-600 font-medium">Rp {{ number_format($k->harga_jual_aktif, 0, ',', '.') }}</td>
-                            <td class="px-5 py-3">
+                        <tr>
+                            <td style="font-weight:600;">{{ $k->nama_komoditas }}</td>
+                            <td class="r num">{{ number_format($k->stok_kg, 0, ',', '.') }}</td>
+                            <td class="r num" style="color: var(--p-muted);">Rp {{ number_format($k->harga_modal_rata2, 0, ',', '.') }}</td>
+                            <td class="r num">Rp {{ number_format($k->harga_beli_aktif, 0, ',', '.') }}</td>
+                            <td class="r num" style="color:#15803d; font-weight:600;">Rp {{ number_format($k->harga_jual_aktif, 0, ',', '.') }}</td>
+                            <td>
                                 @php $s = $k->status_stok; @endphp
-                                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium
-                                    {{ $s === 'Tersedia' ? 'bg-green-100 text-green-700' : ($s === 'Menipis' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
-                                    {{ $s }}
+                                <span class="badge {{ $s === 'Tersedia' ? 'badge-green' : ($s === 'Menipis' ? 'badge-yellow' : 'badge-red') }}">
+                                    <span class="dot"></span>{{ $s }}
                                 </span>
                             </td>
-                            <td class="px-5 py-3">
+                            <td style="display:flex; gap:8px; align-items:center;">
                                 <button @click="editId={{ $k->id }}; editHargaBeli={{ $k->harga_beli_aktif }}; editHargaJual={{ $k->harga_jual_aktif }}"
-                                    class="text-xs text-blue-600 hover:underline mr-2">Edit Harga</button>
+                                    class="btn btn-info btn-xs">Edit Harga</button>
                                 <form method="POST" action="{{ route('admin.komoditas.destroy', $k) }}" class="inline"
                                       onsubmit="return confirm('Hapus komoditas ini?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="text-xs text-red-500 hover:underline">Hapus</button>
+                                    <button type="submit" class="btn btn-danger btn-xs">Hapus</button>
                                 </form>
                             </td>
                         </tr>
 
-                        {{-- Modal Edit Harga inline --}}
-                        <tr x-show="editId === {{ $k->id }}" x-cloak class="bg-green-50">
-                            <td colspan="7" class="px-5 py-4">
-                                <form method="POST" action="{{ route('admin.komoditas.update', $k) }}" class="flex flex-wrap gap-3 items-end">
+                        {{-- Inline edit row --}}
+                        <tr x-show="editId === {{ $k->id }}" x-cloak style="background: rgba(246,224,22,.06);">
+                            <td colspan="7" style="padding: 14px 16px;">
+                                <form method="POST" action="{{ route('admin.komoditas.update', $k) }}" style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
                                     @csrf @method('PUT')
                                     <div>
-                                        <label class="block text-xs text-gray-500 mb-1">Harga Beli (Rp/Kg)</label>
-                                        <input type="number" name="harga_beli_aktif" x-model="editHargaBeli" class="border border-gray-300 rounded px-3 py-1.5 text-sm w-36" min="0" step="100">
+                                        <label class="form-label">Harga Beli (Rp/Kg)</label>
+                                        <input type="number" name="harga_beli_aktif" x-model="editHargaBeli" class="form-control" style="width:150px;" min="0" step="100">
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-gray-500 mb-1">Harga Jual (Rp/Kg)</label>
-                                        <input type="number" name="harga_jual_aktif" x-model="editHargaJual" class="border border-gray-300 rounded px-3 py-1.5 text-sm w-36" min="0" step="100">
+                                        <label class="form-label">Harga Jual (Rp/Kg)</label>
+                                        <input type="number" name="harga_jual_aktif" x-model="editHargaJual" class="form-control" style="width:150px;" min="0" step="100">
                                     </div>
-                                    <button type="submit" class="bg-green-600 text-white px-4 py-1.5 rounded text-sm hover:bg-green-700">Simpan</button>
-                                    <button type="button" @click="editId=null" class="text-sm text-gray-500 hover:underline">Batal</button>
+                                    <div style="display:flex; gap:8px;">
+                                        <button type="submit" class="btn btn-primary btn-sm">Simpan</button>
+                                        <button type="button" @click="editId=null" class="btn btn-ghost btn-sm">Batal</button>
+                                    </div>
                                 </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="px-5 py-6 text-center text-gray-400">Belum ada komoditas.</td></tr>
+                        <tr><td colspan="7" style="text-align:center; padding:24px; color: var(--p-muted); font-size:13px;">Belum ada komoditas.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -86,70 +81,67 @@
     </div>
 
     {{-- Tab: Stock Opname --}}
-    <div x-show="tab==='opname'" x-cloak class="grid lg:grid-cols-5 gap-6">
-        <div class="lg:col-span-2 bg-white rounded-xl p-5 shadow-sm border border-gray-200">
-            <h3 class="font-semibold text-gray-700 mb-4">Penyesuaian Stok</h3>
-            <form method="POST" action="{{ route('admin.penyesuaian-stok.store') }}" class="space-y-4">
+    <div x-show="tab==='opname'" x-cloak style="display:grid; grid-template-columns: 2fr 3fr; gap:16px;">
+        <div class="card card-body">
+            <div style="font-weight:600; font-size:14px; margin-bottom:16px;">Penyesuaian Stok</div>
+            <form method="POST" action="{{ route('admin.penyesuaian-stok.store') }}" style="display:flex; flex-direction:column; gap:14px;">
                 @csrf
                 <div>
-                    <label class="block text-xs text-gray-500 mb-1">Tanggal</label>
-                    <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
+                    <label class="form-label">Tanggal</label>
+                    <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" class="form-control" required>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-500 mb-1">Komoditas</label>
-                    <select name="komoditas_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
-                        <option value="">-- Pilih --</option>
+                    <label class="form-label">Komoditas</label>
+                    <select name="komoditas_id" class="form-control" required>
+                        <option value="">— Pilih —</option>
                         @foreach($komoditas as $k)
                             <option value="{{ $k->id }}">{{ $k->nama_komoditas }} ({{ number_format($k->stok_kg,0,',','.') }} Kg)</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-500 mb-1">Jenis</label>
-                    <select name="jenis" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
+                    <label class="form-label">Jenis</label>
+                    <select name="jenis" class="form-control" required>
                         <option value="susut">Penyusutan (Kurangi Stok)</option>
                         <option value="koreksi_tambah">Koreksi Tambah</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-500 mb-1">Berat (Kg)</label>
-                    <input type="number" name="berat_kg" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" min="0.01" step="0.01" required>
+                    <label class="form-label">Berat (Kg)</label>
+                    <input type="number" name="berat_kg" class="form-control" min="0.01" step="0.01" required>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-500 mb-1">Alasan</label>
-                    <input type="text" name="alasan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Misal: Gabah mengering" required>
+                    <label class="form-label">Alasan</label>
+                    <input type="text" name="alasan" class="form-control" placeholder="Misal: Gabah mengering" required>
                 </div>
-                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg text-sm font-medium">Simpan Penyesuaian</button>
+                <button type="submit" class="btn btn-warning" style="justify-content:center;">Simpan Penyesuaian</button>
             </form>
         </div>
-        <div class="lg:col-span-3 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-5 py-4 border-b border-gray-100 font-semibold text-gray-700">Riwayat Penyesuaian</div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50 text-gray-500 text-xs">
+
+        <div class="card" style="overflow:hidden;">
+            <div class="card-header">Riwayat Penyesuaian</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <th class="px-4 py-3 text-left">Tanggal</th>
-                            <th class="px-4 py-3 text-left">Komoditas</th>
-                            <th class="px-4 py-3 text-left">Jenis</th>
-                            <th class="px-4 py-3 text-right">Berat (Kg)</th>
-                            <th class="px-4 py-3 text-left">Alasan</th>
+                            <th>Tanggal</th>
+                            <th>Komoditas</th>
+                            <th>Jenis</th>
+                            <th class="r">Berat (Kg)</th>
+                            <th>Alasan</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody>
                         @forelse($penyesuaians as $p)
                             <tr>
-                                <td class="px-4 py-2.5">{{ $p->tanggal->format('d/m/Y') }}</td>
-                                <td class="px-4 py-2.5">{{ $p->komoditas->nama_komoditas }}</td>
-                                <td class="px-4 py-2.5">
-                                    <span class="{{ $p->jenis === 'susut' ? 'text-red-600' : 'text-green-600' }} font-medium text-xs">
-                                        {{ $p->label_jenis }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-2.5 text-right">{{ number_format($p->berat_kg, 0, ',', '.') }}</td>
-                                <td class="px-4 py-2.5 text-gray-500">{{ $p->alasan }}</td>
+                                <td>{{ $p->tanggal->format('d/m/Y') }}</td>
+                                <td>{{ $p->komoditas->nama_komoditas }}</td>
+                                <td><span class="badge {{ $p->jenis === 'susut' ? 'badge-red' : 'badge-green' }}">{{ $p->label_jenis }}</span></td>
+                                <td class="r num">{{ number_format($p->berat_kg, 0, ',', '.') }}</td>
+                                <td style="color: var(--p-muted);">{{ $p->alasan }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="px-5 py-6 text-center text-gray-400">Belum ada riwayat.</td></tr>
+                            <tr><td colspan="5" style="text-align:center; padding:20px; color: var(--p-muted); font-size:13px;">Belum ada riwayat.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -158,24 +150,26 @@
     </div>
 
     {{-- Tab: Tambah Komoditas --}}
-    <div x-show="tab==='tambah'" x-cloak class="max-w-md bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 mb-4">Tambah Komoditas Baru</h3>
-        <form method="POST" action="{{ route('admin.komoditas.store') }}" class="space-y-4">
-            @csrf
-            <div>
-                <label class="block text-xs text-gray-500 mb-1">Nama Komoditas</label>
-                <input type="text" name="nama_komoditas" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
-            </div>
-            <div>
-                <label class="block text-xs text-gray-500 mb-1">Harga Beli Awal (Rp/Kg)</label>
-                <input type="number" name="harga_beli_aktif" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" min="0" step="100" required>
-            </div>
-            <div>
-                <label class="block text-xs text-gray-500 mb-1">Harga Jual Awal (Rp/Kg)</label>
-                <input type="number" name="harga_jual_aktif" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" min="0" step="100" required>
-            </div>
-            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-sm font-medium">Tambah Komoditas</button>
-        </form>
+    <div x-show="tab==='tambah'" x-cloak class="card" style="max-width:420px;">
+        <div class="card-header">Tambah Komoditas Baru</div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('admin.komoditas.store') }}" style="display:flex; flex-direction:column; gap:14px;">
+                @csrf
+                <div>
+                    <label class="form-label">Nama Komoditas</label>
+                    <input type="text" name="nama_komoditas" class="form-control" required>
+                </div>
+                <div>
+                    <label class="form-label">Harga Beli Awal (Rp/Kg)</label>
+                    <input type="number" name="harga_beli_aktif" class="form-control" min="0" step="100" required>
+                </div>
+                <div>
+                    <label class="form-label">Harga Jual Awal (Rp/Kg)</label>
+                    <input type="number" name="harga_jual_aktif" class="form-control" min="0" step="100" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="justify-content:center;">Tambah Komoditas</button>
+            </form>
+        </div>
     </div>
 
 </div>

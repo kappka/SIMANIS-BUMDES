@@ -3,88 +3,94 @@
 @section('page-title', 'Dashboard')
 @section('content')
 
-{{-- 4 Kartu Metrik --}}
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
-        <div class="text-xs text-gray-500 mb-1">Laba Bersih Bulan Ini</div>
-        <div class="text-xl font-bold {{ $labaBersihBulanIni >= 0 ? 'text-green-600' : 'text-red-600' }}">
+{{-- 4 Metric Cards --}}
+<div class="grid-4" style="margin-bottom:20px;">
+    <div class="metric-card">
+        <div class="metric-label">Laba Bersih Bulan Ini</div>
+        <div class="metric-value" style="color: {{ $labaBersihBulanIni >= 0 ? '#15803d' : '#b91c1c' }};">
             Rp {{ number_format(abs($labaBersihBulanIni), 0, ',', '.') }}
         </div>
-        <div class="text-xs text-gray-400 mt-1">{{ $labaBersihBulanIni < 0 ? '(Rugi)' : '' }}</div>
+        <div class="metric-sub">{{ $labaBersihBulanIni < 0 ? 'Rugi bersih' : 'Keuntungan bersih' }}</div>
     </div>
-    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
-        <div class="text-xs text-gray-500 mb-1">Estimasi Nilai Stok</div>
-        <div class="text-xl font-bold text-blue-600">Rp {{ number_format($nilaiAsetStok, 0, ',', '.') }}</div>
-        <div class="text-xs text-gray-400 mt-1">Total aset gudang</div>
+    <div class="metric-card">
+        <div class="metric-label">Estimasi Nilai Stok</div>
+        <div class="metric-value" style="color: #1d4ed8;">Rp {{ number_format($nilaiAsetStok, 0, ',', '.') }}</div>
+        <div class="metric-sub">Total aset gudang</div>
     </div>
-    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
-        <div class="text-xs text-gray-500 mb-1">Hutang ke Petani</div>
-        <div class="text-xl font-bold text-orange-600">Rp {{ number_format($hutangKePetani, 0, ',', '.') }}</div>
-        <div class="text-xs text-gray-400 mt-1">Belum dibayar</div>
+    <div class="metric-card">
+        <div class="metric-label">Hutang ke Petani</div>
+        <div class="metric-value" style="color: #c2410c;">Rp {{ number_format($hutangKePetani, 0, ',', '.') }}</div>
+        <div class="metric-sub">Belum dibayar</div>
     </div>
-    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
-        <div class="text-xs text-gray-500 mb-1">Piutang Pembeli</div>
-        <div class="text-xl font-bold text-purple-600">Rp {{ number_format($piutangPembeli, 0, ',', '.') }}</div>
-        <div class="text-xs text-gray-400 mt-1">Belum diterima</div>
-    </div>
-</div>
-
-<div class="grid lg:grid-cols-3 gap-6">
-    {{-- Grafik --}}
-    <div class="lg:col-span-2 bg-white rounded-xl p-5 shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 mb-4">Pembelian vs Penjualan (6 Bulan)</h3>
-        <canvas id="grafikChart" height="100"></canvas>
-    </div>
-
-    {{-- Stok Menipis --}}
-    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 mb-3">⚠️ Stok Menipis</h3>
-        @forelse($stokMenipis as $s)
-            <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0 text-sm">
-                <span class="text-gray-700">{{ $s->nama_komoditas }}</span>
-                <span class="font-medium text-yellow-600">{{ number_format($s->stok_kg, 0, ',', '.') }} Kg</span>
-            </div>
-        @empty
-            <p class="text-sm text-gray-400 text-center py-4">Semua stok aman ✅</p>
-        @endforelse
+    <div class="metric-card">
+        <div class="metric-label">Piutang Pembeli</div>
+        <div class="metric-value" style="color: #7e22ce;">Rp {{ number_format($piutangPembeli, 0, ',', '.') }}</div>
+        <div class="metric-sub">Belum diterima</div>
     </div>
 </div>
 
-{{-- 5 Transaksi Terakhir --}}
-<div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-    <div class="px-5 py-4 border-b border-gray-100">
-        <h3 class="font-semibold text-gray-700">📋 Transaksi Barang Masuk Terakhir</h3>
+{{-- Chart + Stok Menipis --}}
+<div style="display:grid; grid-template-columns: 2fr 1fr; gap:16px; margin-bottom:20px;">
+    <div class="card">
+        <div class="card-header">Pembelian vs Penjualan (6 Bulan)</div>
+        <div class="card-body">
+            <canvas id="grafikChart" height="90"></canvas>
+        </div>
     </div>
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-gray-500 text-xs">
+
+    <div class="card">
+        <div class="card-header" style="display:flex; align-items:center; justify-content:space-between;">
+            <span>Stok Menipis</span>
+            @if($stokMenipis->isNotEmpty())
+                <span class="badge badge-yellow">{{ $stokMenipis->count() }}</span>
+            @endif
+        </div>
+        <div>
+            @forelse($stokMenipis as $s)
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:11px 20px; border-bottom: 1px solid rgba(13,42,28,.05);">
+                    <span style="font-size:13.5px;">{{ $s->nama_komoditas }}</span>
+                    <span style="font-weight:600; font-size:13px; color:#c2410c; font-variant-numeric: tabular-nums;">{{ number_format($s->stok_kg, 0, ',', '.') }} Kg</span>
+                </div>
+            @empty
+                <div style="padding:28px 20px; text-align:center; font-size:13px; color: var(--p-muted);">Semua stok aman</div>
+            @endforelse
+        </div>
+    </div>
+</div>
+
+{{-- Recent transactions --}}
+<div class="card">
+    <div class="card-header">Transaksi Barang Masuk Terakhir</div>
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead>
                 <tr>
-                    <th class="px-5 py-3 text-left">No. Nota</th>
-                    <th class="px-5 py-3 text-left">Tanggal</th>
-                    <th class="px-5 py-3 text-left">Sumber</th>
-                    <th class="px-5 py-3 text-left">Komoditas</th>
-                    <th class="px-5 py-3 text-right">Berat (Kg)</th>
-                    <th class="px-5 py-3 text-right">Total (Rp)</th>
-                    <th class="px-5 py-3 text-left">Status</th>
+                    <th>No. Nota</th>
+                    <th>Tanggal</th>
+                    <th>Sumber</th>
+                    <th>Komoditas</th>
+                    <th class="r">Berat (Kg)</th>
+                    <th class="r">Total (Rp)</th>
+                    <th>Status</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody>
                 @forelse($transaksiTerakhir as $t)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-5 py-3 font-mono text-xs text-green-700">{{ $t->no_nota }}</td>
-                        <td class="px-5 py-3">{{ $t->tanggal->format('d/m/Y') }}</td>
-                        <td class="px-5 py-3">{{ $t->label_sumber }}</td>
-                        <td class="px-5 py-3">{{ $t->komoditas->nama_komoditas }}</td>
-                        <td class="px-5 py-3 text-right">{{ number_format($t->berat_kg, 0, ',', '.') }}</td>
-                        <td class="px-5 py-3 text-right">{{ number_format($t->total_nominal, 0, ',', '.') }}</td>
-                        <td class="px-5 py-3">
-                            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium {{ $t->status_bayar === 'lunas' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700' }}">
+                    <tr>
+                        <td class="nota">{{ $t->no_nota }}</td>
+                        <td>{{ $t->tanggal->format('d/m/Y') }}</td>
+                        <td>{{ $t->label_sumber }}</td>
+                        <td>{{ $t->komoditas->nama_komoditas }}</td>
+                        <td class="r num">{{ number_format($t->berat_kg, 0, ',', '.') }}</td>
+                        <td class="r num">{{ number_format($t->total_nominal, 0, ',', '.') }}</td>
+                        <td>
+                            <span class="badge {{ $t->status_bayar === 'lunas' ? 'badge-green' : 'badge-orange' }}">
                                 {{ $t->label_status }}
                             </span>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="px-5 py-6 text-center text-gray-400">Belum ada transaksi.</td></tr>
+                    <tr><td colspan="7" style="text-align:center; padding:24px; color: var(--p-muted); font-size:13px;">Belum ada transaksi.</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -101,26 +107,31 @@ new Chart(ctx, {
             {
                 label: 'Pembelian (Rp)',
                 data: @json($grafikData['pembelian']),
-                backgroundColor: 'rgba(234, 179, 8, 0.7)',
-                borderRadius: 4,
+                backgroundColor: 'rgba(13,42,28,.75)',
+                borderRadius: 5,
             },
             {
                 label: 'Penjualan (Rp)',
                 data: @json($grafikData['penjualan']),
-                backgroundColor: 'rgba(34, 197, 94, 0.7)',
-                borderRadius: 4,
+                backgroundColor: 'rgba(246,224,22,.85)',
+                borderRadius: 5,
             }
         ]
     },
     options: {
         responsive: true,
-        plugins: { legend: { position: 'top' } },
+        plugins: {
+            legend: { position: 'top', labels: { font: { family: 'Figtree', size: 12 }, boxWidth: 10, usePointStyle: true } }
+        },
         scales: {
             y: {
                 ticks: {
-                    callback: v => 'Rp ' + new Intl.NumberFormat('id-ID').format(v)
-                }
-            }
+                    callback: v => 'Rp ' + new Intl.NumberFormat('id-ID').format(v),
+                    font: { family: 'Figtree', size: 11 }
+                },
+                grid: { color: 'rgba(13,42,28,.06)' }
+            },
+            x: { grid: { display: false } }
         }
     }
 });
